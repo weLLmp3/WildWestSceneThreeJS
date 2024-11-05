@@ -1,0 +1,1070 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Velho Oeste</title>
+  <style>
+    body {
+      margin: 0;
+    }
+
+    canvas {
+      display: block;
+    }
+  </style>
+</head>
+
+<body>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+
+  <script>
+    // Configuração básica da cena
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(
+      100,
+      window.innerWidth / window.innerHeight,
+      0.1,
+      1000
+    );
+    const renderer = new THREE.WebGLRenderer();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    document.body.appendChild(renderer.domElement);
+
+    const controls = new THREE.OrbitControls(camera, renderer.domElement);
+
+    // Adicionando luz
+    const light = new THREE.DirectionalLight(0xffffff, 1);
+    light.position.set(5, 10, 7.5);
+    scene.add(light);
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+    directionalLight.position.x += 20
+    directionalLight.position.y += 20
+    directionalLight.position.z += 20
+    scene.add(directionalLight);
+
+    // Adicionando uma nova luz direcional com intensidade menor
+    const light2 = new THREE.DirectionalLight(0xffffff, 0.5); // Intensidade reduzida
+    light2.position.set(-10, 5, -10); // Reposicionando a luz
+    scene.add(light2);
+
+    // Luz ambiente para garantir que mesmo áreas não iluminadas recebam alguma luz
+    const ambientLight = new THREE.AmbientLight(0x404040); // Luz ambiente
+    scene.add(ambientLight);
+
+
+    // carregando imagens de textura
+    const loader = new THREE.TextureLoader();
+    const solo = loader.load("img/Solo.jpg");
+    const cacto = loader.load("img/cacto.jpg");
+    const feno = loader.load('img/feno.jpg');
+    const madeira = loader.load('img/madeira.jpg');
+
+    // Carrega a imagem de fundo
+    loader.load('img/fundo.jpg', function (texture) {
+      // Define a imagem como fundo da cena
+      scene.background = texture;
+    });
+
+
+
+
+    // Criando o chão
+    const groundGeometry = new THREE.PlaneGeometry(100, 100);
+    const groundMaterial = new THREE.MeshPhongMaterial({
+      color: 0xdeb887,
+      map: solo,
+    });
+    const ground = new THREE.Mesh(groundGeometry, groundMaterial);
+    ground.rotation.x = -Math.PI / 2;
+    scene.add(ground);
+
+    // Criando o moinho de vento
+    // Base do moinho será um cilindro
+    function createMoinho(x, z) {
+      const moinhoGeometry = new THREE.CylinderGeometry(0.5, 1.5, 20);
+      const moinhoMaterial = new THREE.MeshPhongMaterial({
+        color: 0xdeb887,
+        map: madeira
+      });
+      const moinho = new THREE.Mesh(moinhoGeometry, moinhoMaterial);
+      moinho.position.set(x, 10, z);
+      scene.add(moinho);
+    }
+
+    // Topo do moinho 
+    function createTopo(x, z) {
+      const topoGeometry = new THREE.CylinderGeometry(0.5, 0.2, 1.5);
+      const topoMaterial = new THREE.MeshBasicMaterial({
+        color: 0xdeb887,
+        map: madeira
+      });
+      const topo = new THREE.Mesh(topoGeometry, topoMaterial);
+      topo.position.set(x, 20, z);
+      topo.rotation.z = Math.PI / 2; // Rotaciona o cilindro para ficar deitado
+      scene.add(topo);
+    }
+
+    //  Criando helice
+    function createHelice(x, z) {
+      const heliceGeometry = new THREE.BoxGeometry(15, 0.8, 0.5);
+      const helicematerial = new THREE.MeshBasicMaterial({ color: 0xffffcc, map: madeira });
+      const helice = new THREE.Mesh(heliceGeometry, helicematerial);
+      helice.position.set(x, 20, z);
+      helice.rotation.y = Math.PI / 2;
+      scene.add(helice);
+
+      // Animação para girar as hélices
+      function animateHelice() {
+        requestAnimationFrame(animateHelice);
+        helice.rotation.z += 0.01;
+      }
+      animateHelice();
+    }
+
+    // Adicionando hélice 
+    createHelice(-29, -5);
+
+    function createHelice2(x, z) {
+      const heliceGeometry = new THREE.BoxGeometry(0.8, 15, 0.5);
+      const helicematerial = new THREE.MeshBasicMaterial({ color: 0xffffcc, map: madeira });
+      const helice = new THREE.Mesh(heliceGeometry, helicematerial);
+      helice.position.set(x, 20, z);
+      helice.rotation.y = Math.PI / 2;
+      scene.add(helice);
+
+      // Animação para girar as hélices
+      function animateHelice() {
+        requestAnimationFrame(animateHelice);
+        helice.rotation.z += 0.01;
+      }
+      animateHelice();
+    }
+
+    // Adicionando hélice cruzada
+    createHelice2(-29, -5);
+
+    // Adicionando topo do moinho
+    createTopo(-29.5, -5);
+
+    // Adicionando base do moinho
+    createMoinho(-30, -5);
+
+
+    // criando cordilheira
+    function createCordilheira(x, z) {
+      const cordilheiraGeometry = new THREE.CylinderGeometry(10, 5, 50);
+      const cordilheiraMaterial = new THREE.MeshPhongMaterial({
+        color: 0xdeb887,
+        map: solo
+      });
+      const cordilheira = new THREE.Mesh(cordilheiraGeometry, cordilheiraMaterial);
+      cordilheira.position.set(x, 2.5, z);
+      scene.add(cordilheira);
+    }
+    // adicionando cordilheira
+    createCordilheira(20, -60);
+    createCordilheira(0, -60);
+    createCordilheira(10, -60);
+
+    // Função para criar montanhas
+    function createMountain(x, z) {
+      const mountainGeometry = new THREE.ConeGeometry(30, 30, 50, 550);
+      const mountainMaterial = new THREE.MeshPhongMaterial({
+        color: 0xdeb887,
+        map: solo,
+      });
+      const mountain = new THREE.Mesh(mountainGeometry, mountainMaterial);
+      mountain.position.set(x, 5, z);
+      scene.add(mountain);
+    }
+
+    // Adicionando algumas montanhas ao fundo
+    createMountain(15, -60);
+    createMountain(20, -60);
+    createMountain(0, -60);
+    createMountain(10, -60);
+
+    // Criando bola de Feno
+    let sphere;
+    function createSphere(x, z) {
+      const SphereGeometry = new THREE.SphereGeometry(2, 32, 32);
+      const SphereMaterial = new THREE.MeshBasicMaterial({
+        color: 0xdeb887,
+        map: feno,
+      });
+      sphere = new THREE.Mesh(SphereGeometry, SphereMaterial);
+      sphere.position.set(x, 0.3, z);
+      scene.add(sphere);
+    }
+
+    // Adicionando bola de feno
+    createSphere(-30, -2);
+
+
+    //Aguia
+    const clock = new THREE.Clock(); // Para a animação
+
+    // Array para armazenar mixers de animação (caso o modelo tenha animações embutidas)
+    const mixers = [];
+
+    // Função para carregar e animar a águia
+    function loadAndAnimateEagle() {
+      const gltfLoader = new THREE.GLTFLoader();
+      gltfLoader.load(
+        "models/Eagle.glb",
+        (gltf) => {
+          const eagle = gltf.scene;
+          eagle.position.set(0, 10, 0); // Posição inicial da águia (no alto)
+          eagle.scale.set(0.017, 0.017, 0.017); // Ajusta o tamanho da águia
+          scene.add(eagle);
+
+          // Verifica se o modelo possui animações esqueléticas (como o bater de asas)
+          if (gltf.animations && gltf.animations.length > 0) {
+            const mixer = new THREE.AnimationMixer(eagle);
+            const action = mixer.clipAction(gltf.animations[0]); // Usar a primeira animação (bater de asas)
+            action.play();
+            mixers.push(mixer);
+          }
+
+          // Variáveis para armazenar a posição anterior da águia
+          let previousPosition = new THREE.Vector3();
+
+          // Função de animação de voo da águia
+          const animateEagleFlight = () => {
+            // Salva a posição atual antes de atualizar
+            previousPosition.copy(eagle.position);
+
+            // Movimento circular em X e Z (ajustando a direção) e movimento vertical em Y
+            eagle.position.x = Math.sin(Date.now() * 0.001) * 20;
+            eagle.position.z = Math.cos(Date.now() * 0.001) * 20; // Corrigido para manter a direção correta
+            eagle.position.y = 10 + Math.sin(Date.now() * 0.002) * 5; // A águia sobe e desce
+
+            // Calcular a direção do movimento e ajustar a rotação para sempre apontar na direção do movimento
+            let direction = new THREE.Vector3().subVectors(eagle.position, previousPosition).normalize();
+            eagle.lookAt(eagle.position.x + direction.x, eagle.position.y, eagle.position.z + direction.z);
+
+            // Corrigir a rotação no eixo Y para evitar que a águia fique de costas
+            eagle.rotation.y += Math.PI; // Rotaciona a águia para que ela sempre fique de frente
+
+            requestAnimationFrame(animateEagleFlight);
+          };
+
+          animateEagleFlight();
+        },
+        undefined,
+        (error) => {
+          console.error(error);
+        }
+      );
+    }
+
+    // Carregar e animar a águia
+    loadAndAnimateEagle();
+
+    // Função de animação principal
+    function animate3() {
+      const delta = clock.getDelta();
+      mixers.forEach((mixer) => mixer.update(delta)); // Atualiza as animações esqueléticas, se houver
+      requestAnimationFrame(animate3); // Continuar o loop de animação
+    }
+    animate3();
+
+
+    // Carregar e animar a águia
+    loadAndAnimateEagle();
+
+    // Função de animação principal
+    function animate2() {
+      const delta = clock.getDelta();
+      mixers.forEach((mixer) => mixer.update(delta)); // Atualiza as animações esqueléticas, se houver
+      requestAnimationFrame(animate2); // Continuar o loop de animação
+    }
+    animate2();
+
+
+    // Carregar e animar a águia
+    loadAndAnimateEagle();
+
+    // Função de animação principal
+    function animate1() {
+      const delta = clock.getDelta();
+      mixers.forEach((mixer) => mixer.update(delta)); // Atualiza as animações esqueléticas, se houver
+      requestAnimationFrame(animate1); // Continuar o loop de animação
+    }
+    animate1();
+
+
+    // Carregar e animar a águia
+    loadAndAnimateEagle();
+
+    // Função de animação principal (para animar tudo, incluindo o movimento da águia e as animações esqueléticas)
+    function animate() {
+      const delta = clock.getDelta();
+      mixers.forEach((mixer) => mixer.update(delta)); // Atualiza as animações esqueléticas, se houver
+      requestAnimationFrame(animate); // Continuar o loop de animação
+    }
+    animate();
+
+
+    // Carregar o arquivo dos Barris
+    const gltfLoader0 = new THREE.GLTFLoader();
+    gltfLoader0.load("models/Blacksmith.gltf",
+      (gltf) => {
+        // Adiciona o modelo dos barris à cena
+        gltf.scene.position.set(-12, 0, 20);
+        gltf.scene.rotation.y = THREE.MathUtils.degToRad(1009); // Rotaciona graus em radianos
+        gltf.scene.scale.set(2, 2, 2);
+        scene.add(gltf.scene);
+      },
+      undefined,
+      (error) => {
+        console.error(error);
+      }
+    );
+
+    // Carregar o arquivo do salão GLB
+    const gltfLoader26 = new THREE.GLTFLoader();
+    gltfLoader26.load(
+      "models/Saloes.glb",
+      (gltf) => {
+        // Adiciona o modelo dos Saloes à cena
+        gltf.scene.position.set(5, 0, -18);
+        gltf.scene.rotation.y = THREE.MathUtils.degToRad(0); // Rotaciona 1189 graus em radianos
+        gltf.scene.scale.set(12, 12, 12);
+        scene.add(gltf.scene);
+      },
+      undefined,
+      (error) => {
+        console.error(error);
+      }
+    );
+
+    // mato estatico loader 30+
+    const gltfLoader30 = new THREE.GLTFLoader();
+    gltfLoader30.load(
+      "models/dry_grass.glb",
+      (gltf) => {
+        gltf.scene.position.set(0,0,0);
+        gltf.scene.scale.set(5,5,5);
+        scene.add(gltf.scene);
+
+      }
+    );
+    
+    const gltfLoader31 = new THREE.GLTFLoader();
+    gltfLoader31.load(
+      "models/dry_grass.glb",
+      (gltf) => {
+        gltf.scene.position.set(-30,0,10);
+        gltf.scene.scale.set(8,8,8);
+        scene.add(gltf.scene);
+
+      }
+    );
+
+    const gltfLoader32 = new THREE.GLTFLoader();
+    gltfLoader32.load(
+      "models/dry_grass.glb",
+      (gltf) => {
+        gltf.scene.position.set(-40,0,15);
+        gltf.scene.scale.set(8,8,8);
+        scene.add(gltf.scene);
+
+      }
+    );
+
+    const gltfLoader33 = new THREE.GLTFLoader();
+    gltfLoader33.load(
+      "models/dry_grass.glb",
+      (gltf) => {
+        gltf.scene.position.set(-24,0,-3);
+        gltf.scene.scale.set(8,8,8);
+        scene.add(gltf.scene);
+
+      }
+    );
+
+    const gltfLoader34 = new THREE.GLTFLoader();
+    gltfLoader34.load(
+      "models/dry_grass.glb",
+      (gltf) => {
+        gltf.scene.position.set(-30,0,30);
+        gltf.scene.scale.set(6,6,6);
+        scene.add(gltf.scene);
+
+      }
+    );
+// mato com movimento loader 40+
+    const gltfLoader40 = new THREE.GLTFLoader();
+gltfLoader40.load(
+  "models/dry_grass.glb",
+  (gltf) => {
+    const grass = gltf.scene;
+    grass.position.set(-25, 0, -5);
+    grass.scale.set(15, 15, 15);
+    scene.add(grass);
+
+    // Função de animação
+    function animate() {
+      requestAnimationFrame(animate);
+
+      // Aplica uma transformação de rotação para simular o balanço do vento
+      const time = Date.now() * 0.001; // Tempo em segundos
+      grass.rotation.z = Math.sin(time) * 0.1; // Ajuste o valor conforme necessário
+
+      renderer.render(scene, camera);
+    }
+
+    animate();
+  },
+  undefined,
+  (error) => {
+    console.error(error);
+  }
+);
+// adiciona os cliffs (montanhas)
+const cliff = new THREE.GLTFLoader();
+cliff.load(
+  "models/cliff.glb",
+  (gltf) => {
+    gltf.scene.position.set(-50, 5, -45);
+    gltf.scene.scale.set(0.03, 0.03, 0.02);
+    scene.add(gltf.scene);
+
+    // Percorre todos os nós do modelo
+    gltf.scene.traverse((node) => {
+      if (node.isMesh) {
+        // Altera a cor do material
+        node.material.map = solo
+        node.material.needsUpdate = true
+        node.material.color.set(0xdeb887);
+      }
+    });
+  },
+  undefined,
+  (error) => {
+    console.error(error);
+  }
+);
+
+const cliff2 = new THREE.GLTFLoader();
+cliff2.load(
+  "models/cliff.glb",
+  (gltf) => {
+    gltf.scene.position.set(65, 5, 20);
+    gltf.scene.scale.set(0.03, 0.03, 0.02);
+    scene.add(gltf.scene);
+
+    // Percorre todos os nós do modelo
+    gltf.scene.traverse((node) => {
+      if (node.isMesh) {
+        // Altera a cor do material
+        node.material.map = solo
+        node.material.needsUpdate = true
+        node.material.color.set(0xdeb887);
+      }
+    });
+  },
+  undefined,
+  (error) => {
+    console.error(error);
+  }
+);
+
+const cliff3 = new THREE.GLTFLoader();
+cliff3.load(
+  "models/cliff.glb",
+  (gltf) => {
+    gltf.scene.position.set(70, -4, -50);
+    gltf.scene.scale.set(0.03, 0.03, 0.02);
+    scene.add(gltf.scene);
+
+    // Percorre todos os nós do modelo
+    gltf.scene.traverse((node) => {
+      if (node.isMesh) {
+        // Altera a cor do material
+        node.material.map = solo
+        node.material.needsUpdate = true
+        node.material.color.set(0xdeb887);
+      }
+    });
+  },
+  undefined,
+  (error) => {
+    console.error(error);
+  }
+);
+
+// adiciona cerca
+const gltfLoader50 = new THREE.GLTFLoader();
+    gltfLoader50.load(
+      "models/fence.glb",
+      (gltf) => {
+        gltf.scene.position.set(-50,0,-20);
+        gltf.scene.scale.set(2,2,2);
+        gltf.scene.rotation.y = THREE.MathUtils.degToRad(-20);
+        scene.add(gltf.scene);
+
+      }
+    );
+
+    const gltfLoader51 = new THREE.GLTFLoader();
+    gltfLoader51.load(
+      "models/fence.glb",
+      (gltf) => {
+        gltf.scene.position.set(-50,0,-10);
+        gltf.scene.scale.set(2,2,2);
+        gltf.scene.rotation.y = THREE.MathUtils.degToRad(-10);
+        scene.add(gltf.scene);
+
+      }
+    );
+
+    const gltfLoader52 = new THREE.GLTFLoader();
+    gltfLoader52.load(
+      "models/fence.glb",
+      (gltf) => {
+        gltf.scene.position.set(-50,0,5);
+        gltf.scene.scale.set(2,2,2);
+        gltf.scene.rotation.y = THREE.MathUtils.degToRad(-20);
+        scene.add(gltf.scene);
+
+      }
+    );
+
+    const gltfLoader53 = new THREE.GLTFLoader();
+    gltfLoader53.load(
+      "models/fence.glb",
+      (gltf) => {
+        gltf.scene.position.set(-50,0,13);
+        gltf.scene.scale.set(2,2,2);
+        gltf.scene.rotation.y = THREE.MathUtils.degToRad(-20);
+        scene.add(gltf.scene);
+
+      }
+    );
+
+    const gltfLoader54 = new THREE.GLTFLoader();
+    gltfLoader54.load(
+      "models/fence.glb",
+      (gltf) => {
+        gltf.scene.position.set(-50,0,23);
+        gltf.scene.scale.set(2,2,2);
+        gltf.scene.rotation.y = THREE.MathUtils.degToRad(-20);
+        scene.add(gltf.scene);
+
+      }
+    );
+
+    const gltfLoader55 = new THREE.GLTFLoader();
+    gltfLoader55.load(
+      "models/fence.glb",
+      (gltf) => {
+        gltf.scene.position.set(-50,0,35);
+        gltf.scene.scale.set(2,2,2);
+        gltf.scene.rotation.y = THREE.MathUtils.degToRad(-20);
+        scene.add(gltf.scene);
+
+      }
+    );
+
+    const gltfLoader56 = new THREE.GLTFLoader();
+    gltfLoader56.load(
+      "models/fence.glb",
+      (gltf) => {
+        gltf.scene.position.set(10,0,25);
+        gltf.scene.scale.set(2,2,2);
+        gltf.scene.rotation.y = THREE.MathUtils.degToRad(-20);
+        scene.add(gltf.scene);
+
+      }
+    );
+
+    // Carregar o arquivo do salão GLB
+    const gltfLoader = new THREE.GLTFLoader();
+    gltfLoader.load(
+      "models/Saloon.glb",
+      (gltf) => {
+        // Adiciona o modelo do Saloon à cena
+        gltf.scene.position.set(20, 0, 19);
+        gltf.scene.rotation.y = THREE.MathUtils.degToRad(1001); // Rotaciona 1189 graus em radianos
+        gltf.scene.scale.set(0.8, 0.8, 0.8);
+        scene.add(gltf.scene);
+      },
+      undefined,
+      (error) => {
+        console.error(error);
+      }
+    );
+
+    //Carrega o arquivo GLB do cavalo
+    const gltfLoader2 = new THREE.GLTFLoader();
+    gltfLoader2.load(
+      "models/Horse.glb",
+      (gltf) => {
+        gltf.scene.position.set(13, 0, 28);
+        gltf.scene.rotation.y = THREE.MathUtils.degToRad(1001);
+
+        // Ajusta a escala, se necessário
+        gltf.scene.scale.set(0.8, 0.8, 0.8); // Reduz o tamanho, se necessário
+        scene.add(gltf.scene);
+      },
+      undefined,
+      (error) => {
+        console.error(error);
+      }
+    );
+
+    const gltfLoader3 = new THREE.GLTFLoader();
+    gltfLoader3.load(
+      "models/Horse.glb",
+      (gltf) => {
+        gltf.scene.position.set(13, 0, 30);
+        gltf.scene.rotation.y = THREE.MathUtils.degToRad(1001);
+
+        // Ajusta a escala, se necessário
+        gltf.scene.scale.set(0.8, 0.8, 0.8); // Reduz o tamanho, se necessário
+        scene.add(gltf.scene);
+      },
+      undefined,
+      (error) => {
+        console.error(error);
+      }
+    );
+    const gltfLoader4 = new THREE.GLTFLoader();
+    gltfLoader4.load(
+      "models/Horse.glb",
+      (gltf) => {
+        gltf.scene.position.set(13, 0, 32);
+        gltf.scene.rotation.y = THREE.MathUtils.degToRad(1001);
+
+        // Ajusta a escala, se necessário
+        gltf.scene.scale.set(0.8, 0.8, 0.8); // Reduz o tamanho, se necessário
+        scene.add(gltf.scene);
+      },
+      undefined,
+      (error) => {
+        console.error(error);
+      }
+    );
+
+    //adiciona a sela
+    const gltfLoader5 = new THREE.GLTFLoader();
+    gltfLoader5.load(
+      "models/Saddle.glb",
+      (gltf) => {
+        gltf.scene.position.set(13, 1.3, 28);
+        gltf.scene.rotation.y = THREE.MathUtils.degToRad(1001);
+
+        // Ajusta a escala, se necessário
+        gltf.scene.scale.set(0.6, 0.6, 0.6); // Reduz o tamanho, se necessário
+        scene.add(gltf.scene);
+      },
+      undefined,
+      (error) => {
+        console.error(error);
+      }
+    );
+
+    const gltfLoader6 = new THREE.GLTFLoader();
+    gltfLoader6.load(
+      "models/Saddle.glb",
+      (gltf) => {
+        gltf.scene.position.set(13, 1.3, 30);
+        gltf.scene.rotation.y = THREE.MathUtils.degToRad(1001);
+
+        // Ajusta a escala, se necessário
+        gltf.scene.scale.set(0.6, 0.6, 0.6); // Reduz o tamanho, se necessário
+        scene.add(gltf.scene);
+      },
+      undefined,
+      (error) => {
+        console.error(error);
+      }
+    );
+
+    //
+    const gltfLoader7 = new THREE.GLTFLoader();
+    gltfLoader7.load(
+      "models/Saddle.glb",
+      (gltf) => {
+        gltf.scene.position.set(13, 1.3, 32);
+        gltf.scene.rotation.y = THREE.MathUtils.degToRad(1001);
+
+        // Ajusta a escala, se necessário
+        gltf.scene.scale.set(0.6, 0.6, 0.6); // Reduz o tamanho, se necessário
+        scene.add(gltf.scene);
+      },
+      undefined,
+      (error) => {
+        console.error(error);
+      }
+    );
+
+
+    const gltfLoader8 = new THREE.GLTFLoader();
+    gltfLoader8.load(
+      "models/wagon.glb",
+      (gltf) => {
+        gltf.scene.position.set(-19, 0, 16);
+        gltf.scene.rotation.y = THREE.MathUtils.degToRad(-500);
+
+        // Ajusta a escala, se necessário
+        gltf.scene.scale.set(0.05, 0.05, 0.05); // Reduz o tamanho, se necessário
+        scene.add(gltf.scene);
+      },
+      undefined,
+      (error) => {
+        console.error(error);
+      }
+    );
+
+    // Carregar o arquivo do Cranio
+    const gltfLoader20 = new THREE.GLTFLoader();
+    gltfLoader20.load("models/skull.glb",
+      (gltf) => {
+        // Adiciona o modelo do cranio
+        gltf.scene.position.set(-23, 1.5, 9);
+        gltf.scene.rotation.y = THREE.MathUtils.degToRad(190); // Rotaciona graus em radianos
+        gltf.scene.scale.set(5, 8, 8);
+        scene.add(gltf.scene);
+
+      },
+      undefined,
+      (error) => {
+        console.error(error);
+      }
+    );
+    // Carregar o arquivo do Cranio2
+    const gltfLoader21 = new THREE.GLTFLoader();
+    gltfLoader21.load("models/skull.glb",
+      (gltf) => {
+        // Adiciona o modelo do cranio
+        gltf.scene.position.set(-29, 1.2, 10);
+        gltf.scene.rotation.y = THREE.MathUtils.degToRad(1000); // Rotaciona graus em radianos
+        gltf.scene.scale.set(6, 10, 10);
+        scene.add(gltf.scene);
+
+      },
+      undefined,
+      (error) => {
+        console.error(error);
+      }
+    );
+
+    // Carregar o arquivo do cactopipe
+    const gltfLoader22 = new THREE.GLTFLoader();
+    gltfLoader22.load("models/Pipecactus.glb",
+      (gltf) => {
+        // Adiciona o modelo do cranio
+        gltf.scene.position.set(-35, 0.2, 10);
+        gltf.scene.rotation.y = THREE.MathUtils.degToRad(1000); // Rotaciona graus em radianos
+        gltf.scene.scale.set(1, 1, 1);
+        scene.add(gltf.scene);
+
+      },
+      undefined,
+      (error) => {
+        console.error(error);
+      }
+    );
+    // Carregar o arquivo do cactopipe
+    const gltfLoader23 = new THREE.GLTFLoader();
+    gltfLoader23.load("models/Pipecactus.glb",
+      (gltf) => {
+        // Adiciona o modelo do cranio
+        gltf.scene.position.set(-23, 0.2, -20);
+        gltf.scene.rotation.y = THREE.MathUtils.degToRad(1000); // Rotaciona graus em radianos
+        gltf.scene.scale.set(1, 1, 1);
+        scene.add(gltf.scene);
+
+      },
+      undefined,
+      (error) => {
+        console.error(error);
+      }
+    );
+    // Carregar o arquivo do cactopipe
+    const gltfLoader24 = new THREE.GLTFLoader();
+    gltfLoader24.load("models/Pipecactus.glb",
+      (gltf) => {
+        // Adiciona o modelo do cranio
+        gltf.scene.position.set(-29, 0.2, -23);
+        gltf.scene.rotation.y = THREE.MathUtils.degToRad(1000); // Rotaciona graus em radianos
+        gltf.scene.scale.set(2, 1.5, 1.5);
+        scene.add(gltf.scene);
+
+      },
+      undefined,
+      (error) => {
+        console.error(error);
+      }
+    );
+    // Carregar o arquivo do cactogrande
+    const gltfLoader25 = new THREE.GLTFLoader();
+    gltfLoader25.load("models/Cactus.glb",
+      (gltf) => {
+        // Adiciona o modelo do cactogrande
+        gltf.scene.position.set(-29, 0.2, -19);
+        gltf.scene.rotation.y = THREE.MathUtils.degToRad(1000); // Rotaciona graus em radianos
+        gltf.scene.scale.set(1, 1, 1);
+        scene.add(gltf.scene);
+
+      },
+      undefined,
+      (error) => {
+        console.error(error);
+      }
+    );
+
+    //Adiciona a fogueira
+    const gltfLoader9 = new THREE.GLTFLoader();
+    gltfLoader9.load(
+      "models/Campfire.glb",
+      (gltf) => {
+        // Ajuste a posição, rotação e escala da fogueira
+        gltf.scene.position.set(-5, 0.9, 25);
+        gltf.scene.rotation.y = THREE.MathUtils.degToRad(-500);
+        gltf.scene.scale.set(1.5, 1.5, 1.5);
+
+        scene.add(gltf.scene);
+
+        // Adicionar uma PointLight para simular a luz da fogueira
+        const fireLight = new THREE.PointLight(0xffa500, 2, 10);
+        fireLight.position.set(-5, 1.5, 25); // Coloque a luz no centro da fogueira
+        scene.add(fireLight);
+
+        // Adicionar uma leve variação no brilho da luz para simular o piscar do fogo
+        const animateLight = () => {
+          fireLight.intensity = 2 + Math.sin(Date.now() * 0.005) * 0.5;
+          requestAnimationFrame(animateLight);
+        };
+        animateLight();
+
+        // Adicionar sistema de partículas para simular o fogo
+        const fireParticles = new THREE.BufferGeometry();
+        const particleCount = 100;
+        const particles = new Float32Array(particleCount * 3);
+
+        for (let i = 0; i < particleCount; i++) {
+          const x = (Math.random() - 0.5) * 0.5; // Partículas espalhadas perto do centro
+          const y = Math.random() * 1.5; // Altura das chamas
+          const z = (Math.random() - 0.5) * 0.5;
+          particles[i * 3] = x;
+          particles[i * 3 + 1] = y;
+          particles[i * 3 + 2] = z;
+        }
+
+        fireParticles.setAttribute('position', new THREE.BufferAttribute(particles, 3));
+
+        const fireMaterial = new THREE.PointsMaterial({
+          color: 0xff4500, // Cor alaranjada do fogo
+          size: 0.1,
+          transparent: true,
+          opacity: 0.8,
+          blending: THREE.AdditiveBlending, // Para brilho mais intenso
+        });
+
+        const fire = new THREE.Points(fireParticles, fireMaterial);
+        fire.position.set(-5, 0.9, 30); // Coloque o sistema de partículas na posição da fogueira
+        scene.add(fire);
+
+        // Animação para simular o movimento das chamas
+        const animateFire = () => {
+          const positions = fireParticles.attributes.position.array;
+          for (let i = 0; i < particleCount; i++) {
+            positions[i * 3 + 1] += 0.02; // Faz as partículas subirem
+
+            // Resetar partículas que ultrapassam uma certa altura
+            if (positions[i * 3 + 1] > 2) {
+              positions[i * 3 + 1] = 0;
+            }
+          }
+          fireParticles.attributes.position.needsUpdate = true;
+          requestAnimationFrame(animateFire);
+        };
+        animateFire();
+      },
+      undefined,
+      (error) => {
+        console.error(error);
+      }
+    );
+
+    const gltfLoader13 = new THREE.GLTFLoader();
+    gltfLoader9.load(
+      "models/Campfire.glb",
+      (gltf) => {
+        // Ajuste a posição, rotação e escala da fogueira
+        gltf.scene.position.set(-5, 0.9, 30);
+        gltf.scene.rotation.y = THREE.MathUtils.degToRad(-500);
+        gltf.scene.scale.set(1.5, 1.5, 1.5);
+
+        scene.add(gltf.scene);
+
+        // Adicionar uma PointLight para simular a luz da fogueira
+        const fireLight = new THREE.PointLight(0xffa500, 2, 10);
+        fireLight.position.set(-5, 1.5, 25); // Coloque a luz no centro da fogueira
+        scene.add(fireLight);
+
+        // Adicionar uma leve variação no brilho da luz para simular o piscar do fogo
+        const animateLight = () => {
+          fireLight.intensity = 2 + Math.sin(Date.now() * 0.005) * 0.5;
+          requestAnimationFrame(animateLight);
+        };
+        animateLight();
+
+        // Adicionar sistema de partículas para simular o fogo
+        const fireParticles = new THREE.BufferGeometry();
+        const particleCount = 100;
+        const particles = new Float32Array(particleCount * 3);
+
+        for (let i = 0; i < particleCount; i++) {
+          const x = (Math.random() - 0.5) * 0.5; // Partículas espalhadas perto do centro
+          const y = Math.random() * 1.5; // Altura das chamas
+          const z = (Math.random() - 0.5) * 0.5;
+          particles[i * 3] = x;
+          particles[i * 3 + 1] = y;
+          particles[i * 3 + 2] = z;
+        }
+
+        fireParticles.setAttribute('position', new THREE.BufferAttribute(particles, 3));
+
+        const fireMaterial = new THREE.PointsMaterial({
+          color: 0xff4500, // Cor alaranjada do fogo
+          size: 0.1,
+          transparent: true,
+          opacity: 0.8,
+          blending: THREE.AdditiveBlending, // Para brilho mais intenso
+        });
+
+        const fire = new THREE.Points(fireParticles, fireMaterial);
+        fire.position.set(-5, 0.9, 25); // Coloque o sistema de partículas na posição da fogueira
+        scene.add(fire);
+
+        // Animação para simular o movimento das chamas
+        const animateFire = () => {
+          const positions = fireParticles.attributes.position.array;
+          for (let i = 0; i < particleCount; i++) {
+            positions[i * 3 + 1] += 0.02; // Faz as partículas subirem
+
+            // Resetar partículas que ultrapassam uma certa altura
+            if (positions[i * 3 + 1] > 2) {
+              positions[i * 3 + 1] = 0;
+            }
+          }
+          fireParticles.attributes.position.needsUpdate = true;
+          requestAnimationFrame(animateFire);
+        };
+        animateFire();
+      },
+      undefined,
+      (error) => {
+        console.error(error);
+      }
+    );
+
+    // Carregar o arquivo da bola de feno
+    const gltfLoader18 = new THREE.GLTFLoader();
+    let tumbleweed;
+    let angle = 0;
+
+    gltfLoader18.load("models/Tumbleweed.glb",
+      (gltf) => {
+        // Adiciona o modelo da bola à cena
+        tumbleweed = gltf.scene;
+        tumbleweed.position.set(10, -8, 4);
+        tumbleweed.rotation.y = THREE.MathUtils.degToRad(0); // Ajuste a rotação inicial
+        scene.add(tumbleweed);
+
+        // Função de animação para mover a bola de feno
+        function animateTumbleweed() {
+          requestAnimationFrame(animateTumbleweed);
+          angle += 0.0009; // Ajuste a velocidade de rotação conforme necessário
+          tumbleweed.position.x = 50 * Math.cos(angle); // Raio do círculo
+          tumbleweed.position.y = 3.5 * Math.sin(angle); // Raio do círculo
+          tumbleweed.rotation.z += 0.04;
+        }
+        animateTumbleweed();
+      },
+      undefined,
+      (error) => {
+        console.error(error);
+      }
+    );
+
+    
+
+
+    //adiciona o cacto
+    const gltfLoader10 = new THREE.GLTFLoader();
+    gltfLoader10.load(
+      "models/Barrel cactus.glb",
+      (gltf) => {
+        gltf.scene.position.set(-20, 0, 30);
+        gltf.scene.rotation.y = THREE.MathUtils.degToRad(-500);
+
+        // Ajusta a escala, se necessário
+        gltf.scene.scale.set(0.4, 0.4, 0.4); // Reduz o tamanho, se necessário
+        scene.add(gltf.scene);
+      },
+      undefined,
+      (error) => {
+        console.error(error);
+      }
+    );
+    const gltfLoader11 = new THREE.GLTFLoader();
+    gltfLoader11.load(
+      "models/Barrel cactus.glb",
+      (gltf) => {
+        gltf.scene.position.set(-28, 0, 40);
+        gltf.scene.rotation.y = THREE.MathUtils.degToRad(-500);
+
+        // Ajusta a escala, se necessário
+        gltf.scene.scale.set(0.4, 0.4, 0.4); // Reduz o tamanho, se necessário
+        scene.add(gltf.scene);
+      },
+      undefined,
+      (error) => {
+        console.error(error);
+      }
+    );
+    const gltfLoader12 = new THREE.GLTFLoader();
+    gltfLoader12.load(
+      "models/Barrel cactus.glb",
+      (gltf) => {
+        gltf.scene.position.set(-14, 0, 44);
+        gltf.scene.rotation.y = THREE.MathUtils.degToRad(-500);
+
+        // Ajusta a escala, se necessário
+        gltf.scene.scale.set(0.4, 0.4, 0.4); // Reduz o tamanho, se necessário
+        scene.add(gltf.scene);
+      },
+      undefined,
+      (error) => {
+        console.error(error);
+      }
+    );
+
+    // Configuração da câmera
+    camera.position.z = 30;
+    camera.position.y = 10;
+
+    // Função de animação
+    function animate() {
+      requestAnimationFrame(animate);
+      controls.update();
+
+      renderer.render(scene, camera);
+
+
+    }
+    animate();
+  </script>
+</body>
+
+</html>
